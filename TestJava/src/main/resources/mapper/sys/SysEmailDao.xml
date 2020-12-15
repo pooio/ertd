@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.metaShare.modules.sys.dao.SysEmailDao">
+
+    <select id="getEmailList" resultType="com.metaShare.modules.sys.entity.SysEmail">
+        select * from sys_email where 1=1 and state=0
+         ORDER BY create_time desc
+    </select>
+
+</mapper>
+
+

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.metaShare.modules.sys.dao.SysConfigDao">
+    <sql id="sys_conf_cloumn">t.*</sql>
+    <select id="getList" parameterType="com.metaShare.modules.sys.entity.SysConfig" resultType="com.metaShare.modules.sys.entity.SysConfig">
+        SELECT
+        <include refid="sys_conf_cloumn"></include>
+        FROM
+        sys_config t where deleted=0
+         <if test="configType != null">
+            and config_type =#{configType}
+        </if>
+         <!--<if test="allData != null">
+            and in_use =1
+        </if>-->
+    </select>
+    
+    <select id="getConfigData" resultType="com.metaShare.modules.sys.entity.SysConfig">
+        SELECT
+        <include refid="sys_conf_cloumn"></include>
+        FROM
+        sys_config t
+        where config_type =#{configType}
+    </select>
+     <select id="getData" resultType="com.metaShare.modules.sys.entity.SysConfig">
+        SELECT
+        <include refid="sys_conf_cloumn"></include>
+        FROM
+        sys_config t
+        where config_id =#{configId}
+    </select>
+
+</mapper>

@@ -1,0 +1,2 @@
+const URL = 'http://test.metashare.com.cn:85/TestJavaback_JxDYGL'
+let API_IMG = URLlet LIU_CHENG = URLlet UPLOAD_URL = URLlet baseURL = URL + '/api/'export default {    API_IMG,    LIU_CHENG,    UPLOAD_URL,    baseURL,    URL}

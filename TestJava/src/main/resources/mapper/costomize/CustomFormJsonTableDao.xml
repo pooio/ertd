@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.metaShare.modules.customize.dao.CustomFormJsonTableDao">
+
+    <update id="createCustomTable">
+        CREATE TABLE ${tableName} (
+        `id` varchar(32) NOT NULL,
+        <foreach collection="array" item="fields">
+            <!--<choose>
+                <when test=" key == 'number' or key == 'rate'">
+                    ${fields} int NULL DEFAULT NULL COMMENT '数字输入框',
+                </when>
+                <when test=" key == 'radio' or key == 'switch' ">
+                    ${fields} int NULL DEFAULT NULL COMMENT '单选框',
+                </when>
+                <when test=" key == 'date' or key == 'time'">
+                    ${fields} DATETIME NULL DEFAULT NULL COMMENT '日期选择器',
+                </when>
+                <otherwise>
+                    ${fields} varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '控件',
+                </otherwise>
+            </choose>-->
+            ${fields} varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '控件',
+        </foreach>
+        `parent_data_id` varchar(32)  NULL COMMENT '父数据ID',
+        `process_id` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '绑定的流程ID',
+        `user_name` varchar(255)  NULL COMMENT '申请人',
+        `user_id` varchar(32)  NULL COMMENT '申请人ID',
+        `org_id` varchar(32)  NULL COMMENT '部门ID',
+        `org_name` varchar(32)  NULL COMMENT '部门名称',
+        `create_time` varchar(32)  NULL COMMENT '创建时间',
+        PRIMARY KEY (`id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    </update>
+
+
+    <delete id="deleteTable">
+        drop table ${formTableName}
+    </delete>
+
+    <insert id="saveData">
+        insert into ${tableName}
+        (
+        <foreach collection="dataMap" index="key" item="_value" separator=",">
+            ${key}
+        </foreach>)
+        values (
+        <foreach collection="dataMap" index="key" item="_value" separator=",">
+            '${_value}'
+        </foreach>)
+    </insert>
+
+    <delete id="deleteData">
+        delete from ${tableName} where id = #{id}
+    </delete>
+
+    <select id="getDataList" resultType="hashmap">
+        select * from ${tableName}
+         where 1=1
+         <if test="sql != null and sql != ''">
+             ${sql}
+         </if>
+         <if test="startTime != null and endTime != null">
+             and create_time &gt;= #{startTime} and create_time  &lt; #{endTime}
+         </if>
+         <if test="dataId != null">
+             and parent_data_id = #{dataId}
+         </if>
+         order by create_time desc
+    </select>
+
+    <select id="getDataTotal" resultType="java.lang.Integer">
+        select count(*) from ${tableName}
+        where 1=1
+        <if test="sql != null and sql != ''">
+            ${sql}
+        </if>
+        <if test="startTime != null and endTime != null">
+            and create_time &gt;= #{startTime} and create_time  &lt; #{endTime}
+        </if>
+        <if test="dataId != null">
+            and parent_data_id = #{dataId}
+        </if>
+    </select>
+    <select id="judgeFieldExist" resultType="java.lang.Integer">
+        SELECT
+          count(*)
+        FROM
+          information_schema. COLUMNS
+        WHERE
+          table_name = #{dataTableName}
+          AND column_name = #{type}
+    </select>
+
+    <insert id="insertFieldToTable">
+        ALTER TABLE ${dataTableName} ADD COLUMN ${type}
+         ${key}  NULL;
+    </insert>
+
+    <update id="updateProcessIdOnTable">
+        update ${tableName} set process_id = #{processInstanceId} where id = #{businessKey}
+    </update>
+
+    <update id="updataData">
+        update ${tableName} set
+        <foreach collection="dataMap" index="key" item="_value"  separator=",">
+            ${key} = '${_value}'
+        </foreach>
+        where id = #{dataId}
+    </update>
+
+    <select id="getAllDataListOnTable" resultType="hashmap">
+        select * from ${tableName} order by create_time desc
+    </select>
+
+    <select id="getUserInfo" resultType="hashmap">
+        select user_name,org_name,create_time from ${dataTableName} where id = #{businessKey}
+    </select>
+
+    <select id="getDataById" resultType="hashmap">
+        select * from  ${dataTableName} where id = #{dataId}
+    </select>
+
+    <select id="getCustomDirData" resultType="hashmap">
+        select ${column} as columns,id from ${dataTableName}
+    </select>
+
+</mapper>

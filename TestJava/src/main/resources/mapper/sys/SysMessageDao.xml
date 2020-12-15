@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.metaShare.modules.sys.dao.SysMessageDao">
+
+    <select id="selectDataListByConditions" resultType="com.metaShare.modules.sys.entity.SysMessage">
+		select t.*,s.name as receiverName  from sys_message t left join sys_user s
+		on t.receiver  = s.id where t.deleted = 0 and s.name is not null
+		<if test="userId != null">
+		    and t.receiver = #{userId}
+		</if>
+		<if test="status != null and status != 100">
+			and t.status = #{status}
+		</if>
+		<if test="subject != null">
+			and t.subject like CONCAT('%', #{subject}, '%')
+		</if>
+		<if test="content != null">
+			and t.content like CONCAT('%', #{content}, '%')
+		</if>
+		<if test="messageType != null">
+			and t.message_type=#{messageType}
+		</if>
+		order by create_time desc
+	</select>
+
+	<select id="selectAllList" resultType="com.metaShare.modules.sys.entity.SysMessage">
+		select t.*,s.name as receiverName  from sys_message t left join sys_user s
+		on t.receiver  = s.id
+		where t.receiver = #{userId} and t.deleted = 0
+		order by create_time desc
+	</select>
+
+	<select id="getReadedNumber" resultType="java.lang.Integer">
+		select count(*) from sys_message where receiver = #{userId} and deleted = 0
+	</select>
+
+	<select id="getUnReadedNumber" resultType="java.lang.Integer">
+		select count(*) from sys_message where status = 0 and receiver = #{userId} and deleted = 0
+	</select>
+
+	<update id="updateMessageStatus" >
+		update sys_message set status = 1 where receiver = #{userId}
+	</update>
+
+	<update id="updateMessageStatusOnId">
+		update sys_message set status = 1 where receiver = #{userId} and id = #{id}
+
+	</update>
+
+	<update id="emptyMessage">
+		update sys_message set deleted = 1 where receiver = #{userId}
+	</update>
+
+	<select id="getMessageList" resultType="com.metaShare.modules.sys.entity.SysMessage">
+		select sm.* from sys_message as sm left join po_sys_user as psu on sm.receiver = psu.user_id where psu.login_name = #{loginName} and psu.sys_code = 'sysCode-projectManage' order by sm.create_time desc
+
+	</select>
+
+	<update id="updateStatusAndDelted">
+		update sys_message set deleted = 0,status = 0
+	</update>
+
+	<update id="deleteAllMessageByUserId">
+		UPDATE
+			sys_message
+		SET
+			deleted = 1
+		WHERE
+			id
+		  IN (select a.* from (SELECT
+			id
+		FROM
+			sys_message
+		WHERE
+			deleted = 0
+		AND receiver = #{userId}) as a )
+	</update>
+</mapper>
+
+

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.metaShare.modules.sys.dao.SysAreaDao">
+    <sql id="sys_area_cloumn">t.*</sql>
+    <select id="findareaList" parameterType="com.metaShare.modules.sys.entity.SysArea"
+            resultType="com.metaShare.modules.sys.entity.SysArea">
+        SELECT
+        <include refid="sys_area_cloumn"></include>
+        FROM
+        sys_area t
+        WHERE 1=1
+        <if test="parentCode != null">
+        	and  parent_code = #{parentCode}
+        </if>
+        <if test="areaName != null">
+          and (area_name like CONCAT('%', #{areaName}, '%') or  area_code  like CONCAT('%', #{areaName}, '%'))
+        </if>
+        order by t.area_code asc
+    </select>
+ 
+</mapper>

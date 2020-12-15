@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.metaShare.modules.bulletin.dao.BulletinInfoDao">
+    <select id="getUserBulletinInfoList" parameterType="hashmap" resultType="com.metaShare.modules.bulletin.entity.BulletinInfo">
+         SELECT bi.*,bs.`send_pk`,di.dic_name as bulletin_name
+        FROM `bulletin_info` bi 
+         LEFT JOIN `bulletin_send` bs ON bs.`bulletin_pk`=bi.`bulletin_pk`
+          LEFT JOIN sys_dicinfo  di ON bi.bulletin_type = di.id
+        WHERE 1=1 and 
+        (bs.`user_pk`='-1' OR bs.`user_pk`=#{userPk}) 
+        AND bi.`publish_state`=1 AND bi.`state`=1
+          <if test="bulletinTitle != null">
+          and bi.`bulletin_title` like CONCAT('%', #{bulletinTitle}, '%')
+		  </if>
+		  <if test="closeDate != null">
+			  and bi.close_date &gt;= #{closeDate}
+		  </if>
+        order by bi.create_time desc 
+    </select>
+ 
+ 
+    <select id="getList" parameterType="hashmap" resultType="com.metaShare.modules.bulletin.entity.BulletinInfo">
+		SELECT sys_dicinfo.id as bulletin_type ,sys_dicinfo.dic_name as bulletin_name, BULLETIN_INFO.*
+		FROM BULLETIN_INFO
+		LEFT JOIN sys_dicinfo ON sys_dicinfo.id=BULLETIN_INFO.bulletin_type and sys_dicinfo.in_use=1 and sys_dicinfo.deleted=0
+		where 1=1
+		<if test="bulletinTitle != null">
+          and bulletin_title like CONCAT('%', #{bulletinTitle}, '%')
+        </if>
+        order by create_time desc
+	</select>
+	<select id="getBulletinInfo" parameterType="hashmap" resultType="com.metaShare.modules.bulletin.entity.BulletinInfo">
+		SELECT sys_dicinfo.id as bulletin_type,BULLETIN_INFO.*
+		FROM BULLETIN_INFO
+		LEFT JOIN sys_dicinfo ON sys_dicinfo.id=BULLETIN_INFO.bulletin_type and sys_dicinfo.in_use=1 and sys_dicinfo.deleted=0
+		where 1=1 and bulletin_pk=#{bulletinPk}
+		<if test="bulletinTitle != null">
+			and bulletin_title like CONCAT('%', #{bulletinTitle}, '%')
+		</if>
+		order by create_time desc
+	</select>
+
+    <select id="getBulletinReadItemList" parameterType="hashmap" resultType="hashmap">
+		SELECT B.ITEM_PK,B.BULLETIN_PK,B.SEND_PK,B.STATE,B.USER_PK,B.CREATE_NAME,b.create_time
+		,U.NAME as LOGIN_NAME
+		FROM BULLETIN_READ_ITEM B
+		LEFT JOIN sys_user U
+		ON B.USER_PK=U.ID
+		WHERE B.BULLETIN_PK = #{bulletinPk} and U.DELETED =0
+		order by B.ITEM_PK
+	</select>
+		<select id="getBuletinSendByBulletinId" parameterType="hashmap" resultType="com.metaShare.modules.bulletin.entity.BulletinSend" >
+		SELECT SEND_PK,USER_PK,BULLETIN_PK,BULLETIN_TITLE,BULLETIN_TYPE,BULLETIN_ISREAD,STATE,CREATE_PK,CREATE_NAME
+		FROM BULLETIN_SEND
+		WHERE BULLETIN_PK = #{bulletinPk}
+	</select>
+ <!--根据公告ID和已读状态获取公告发送信息-->
+	<select id="getBulletinSendList" parameterType="hashmap" resultType="hashmap">
+		SELECT BS.SEND_PK,BS.USER_PK,BS.BULLETIN_PK,BS.BULLETIN_TITLE
+       ,BS.BULLETIN_TYPE,BS.BULLETIN_ISREAD,BS.STATE,BS.CREATE_PK,BS.CREATE_NAME,
+		U.NAME as LOGIN_NAME
+		FROM BULLETIN_SEND BS
+		LEFT JOIN sys_user U
+		ON BS.USER_PK=U.ID
+		WHERE BS.BULLETIN_PK = #{bulletinPk} AND BS.BULLETIN_ISREAD = #{bulletinIsread}  and U.DELETED =0
+		order by BS.SEND_PK
+	</select>
+	<!--根据BULLETIN_PK获取公告已读信息-->
+	<select id="getBulletinReadItemByBulletinPk" parameterType="hashmap" resultType="com.metaShare.modules.bulletin.entity.BulletinReadItem">
+		SELECT * FROM BULLETIN_READ_ITEM WHERE BULLETIN_PK = #{bulletinPk}
+	</select>
+	
+	
+	<select id="getAllUserBulletinList2" parameterType="hashmap" resultType="hashmap" >
+		SELECT BS.SEND_PK,BS.USER_PK,BS.BULLETIN_PK,BS.BULLETIN_TITLE,BS.BULLETIN_TYPE,BS.BULLETIN_ISREAD,BS.STATE,BS.CREATE_PK,
+		U.NAME as LOGIN_NAME ,U.ID
+		FROM BULLETIN_SEND BS,sys_user U WHERE BS.BULLETIN_PK = #{bulletinPk} AND BS.BULLETIN_ISREAD = 0 and U.DELETED =0 ORDER BY BS.SEND_PK
+	</select>
+	
+	
+	<select id="getAllUserBulletinList" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (SELECT 
+		  BS.SEND_PK,
+		  BS.USER_PK,
+		  BS.BULLETIN_PK,
+		  BS.BULLETIN_TITLE,
+		  BS.BULLETIN_TYPE,
+		  BS.BULLETIN_ISREAD,
+		  BS.STATE,
+		  BS.CREATE_PK,
+		  BS.CREATE_NAME,
+		  BS.CREATE_TIME AS CREATE_TIME,
+		  U.NAME as LOGIN_NAME,
+		  U.ID
+		   FROM BULLETIN_SEND BS,sys_user U WHERE BS.BULLETIN_PK = #{bulletinPk}  and U.DELETED =0 ) a 
+		  WHERE a.id NOT IN(SELECT user_pk FROM BULLETIN_READ_ITEM WHERE BULLETIN_PK = #{bulletinPk})
+		  ORDER BY a.SEND_PK 
+	</select>
+	
+	
+	<select id="getBulletinReadItemByUserId" parameterType="hashmap" resultType="com.metaShare.modules.bulletin.entity.BulletinReadItem">
+		SELECT ITEM_PK,BULLETIN_PK,SEND_PK,STATE,USER_PK,CREATE_NAME,
+		 CREATE_TIME
+		FROM BULLETIN_READ_ITEM
+		WHERE USER_PK = #{userId} AND BULLETIN_PK = #{bulletinPk} AND SEND_PK = #{sendPk}
+	</select>
+
+	<select id="getBulletinData" resultType="com.metaShare.modules.bulletin.entity.BulletinInfo">
+		SELECT sys_dicinfo.id as bulletin_type ,sys_dicinfo.dic_name as bulletin_name, BULLETIN_INFO.*
+		FROM BULLETIN_INFO
+		LEFT JOIN sys_dicinfo ON sys_dicinfo.id=BULLETIN_INFO.bulletin_type and sys_dicinfo.in_use=1 and sys_dicinfo.deleted=0
+		where bulletin_pk = #{id}
+
+	</select>
+
+</mapper>

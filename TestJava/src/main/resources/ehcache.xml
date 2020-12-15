@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache name="plate" updateCheck="false">
+    <diskStore path="java.io.tmpdir"/>
+	 <cache name="sysCache"
+           maxEntriesLocalHeap="2000"
+           eternal="false"
+           timeToIdleSeconds="3600"
+           timeToLiveSeconds="0"
+           overflowToDisk="true"
+           statistics="true">
+    </cache>
+    
+      <cache name="userCache"
+           maxEntriesLocalHeap="10000"
+           overflowToDisk="true"
+           eternal="false"
+           diskPersistent="false"
+           timeToLiveSeconds="3600"
+           timeToIdleSeconds="0"
+           statistics="true"/>
+	
+	<!-- 资源缓存 不过期 -->
+	 <cache name="resourceCache"
+           maxEntriesLocalHeap="2000"
+           eternal="false"
+            timeToIdleSeconds="3600"
+           timeToLiveSeconds="0"
+           overflowToDisk="true"
+           statistics="true">
+    </cache>
+    
+    <!-- 资源缓存 不过期 -->
+	 <cache name="roleAuthCache"
+           maxEntriesLocalHeap="2000"
+           eternal="false"
+            timeToIdleSeconds="3600"
+           timeToLiveSeconds="0"
+           overflowToDisk="true"
+           statistics="true">
+    </cache>
+    
+      <!-- 资源缓存 不过期 -->
+	 <cache name="roleCache"
+           maxEntriesLocalHeap="2000"
+           eternal="false"
+            timeToIdleSeconds="3600"
+           timeToLiveSeconds="0"
+           overflowToDisk="true"
+           statistics="true">
+    </cache>
+    
+    	<!-- 资源缓存 不过期 -->
+	 <cache name="dictCache"
+           maxEntriesLocalHeap="2000"
+           eternal="false"
+            timeToIdleSeconds="3600"
+           timeToLiveSeconds="0"
+           overflowToDisk="true"
+           statistics="true">
+    </cache>
+    
+    <!-- 登录记录缓存 锁定10分钟 -->
+    <cache name="passwordRetryCache"
+           maxEntriesLocalHeap="2000"
+           eternal="false"
+           timeToIdleSeconds="600"
+           timeToLiveSeconds="0"
+           overflowToDisk="true"
+           statistics="true">
+    </cache>
+    
+    <cache name="authenticationCache"
+           maxEntriesLocalHeap="2000"
+           eternal="false"
+           timeToIdleSeconds="3600"
+           timeToLiveSeconds="0"
+           overflowToDisk="true"
+           statistics="true">
+    </cache>
+
+    <cache name="shiro-activeSessionCache"
+           maxEntriesLocalHeap="2000"
+           eternal="false"
+           timeToIdleSeconds="3600"
+           timeToLiveSeconds="0"
+           overflowToDisk="true"
+           statistics="true">
+    </cache>
+    
+      <!-- 不过期 -->
+     <cache name="noticeCache"
+           maxEntriesLocalHeap="2000"
+           eternal="false"
+           timeToIdleSeconds="3600"
+           timeToLiveSeconds="0"
+           overflowToDisk="true"
+           statistics="true">
+    </cache>
+
+</ehcache>

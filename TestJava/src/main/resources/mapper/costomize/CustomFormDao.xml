@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.metaShare.modules.customize.dao.CustomFormDao">
+
+    <select id="getList" resultType="com.metaShare.modules.customize.entity.CustomForm">
+        select custom.*,file.file_type as fileType,file.old_file_name as fileName,relational.parent_id as parentId from custom_form as custom
+         left join sys_file_attach as file on custom.word_file_id = file.id
+         left join custom_relational as relational on custom.id = relational.children_id
+         where custom.deleted = 0
+        <if test="businessName != null">
+            and custom.business_name like CONCAT('%',#{businessName},'%')
+        </if>
+        <if test="type != null">
+            and custom.post_status = 1 and approval_status = 2 and  process_definition_key is not null order by create_time asc
+        </if>
+
+        <if test="type == null">
+            order by custom.create_time desc
+        </if>
+    </select>
+
+    <select id="selectByIdentification" resultType="com.metaShare.modules.customize.entity.CustomForm">
+        select custom.*,file.file_type as fileType from custom_form as custom
+         left join sys_file_attach as file on custom.word_file_id = file.id
+         where custom.deleted = 0 and custom.form_identification = #{formIdentification}
+    </select>
+
+    <select id="selectByFormName" resultType="com.metaShare.modules.customize.entity.CustomForm">
+        select * from custom_form where deleted = 0 and business_name = #{formName}
+    </select>
+
+    <select id="selectByDefinitionKey" resultType="java.lang.Integer">
+        select count(*) from custom_form where deleted = 0 and process_definition_key = #{key}
+    </select>
+
+    <select id="getModelName" resultType="hashmap">
+        select * from act_re_model where KEY_ = #{processDefinitionKey}
+    </select>
+
+    <select id="getCustomListName" resultType="com.metaShare.modules.customize.entity.CustomForm">
+        select * from custom_form where deleted = 0 and post_status = 1 and process_definition_key is null
+        <if test="customName != null">
+            and business_name like CONCAT('%',#{customName},'%')
+        </if>
+        order by data_table_name asc
+    </select>
+
+    <update id="updateDefinitionKey">
+        update custom_form set process_definition_key = #{processDefinitionKey} where id = #{id}
+    </update>
+
+    <select id="getBySpell" resultType="java.lang.Integer">
+        select count(*) from custom_form where deleted = 0 and form_identification = #{spell}
+    </select>
+
+    <update id="updateToDelete">
+        update custom_form set deleted = '1' where id = #{id}
+    </update>
+
+    <select id="getIsPublishCustomList" resultType="com.metaShare.modules.customize.entity.CustomForm">
+        select * from custom_form where deleted = 0 and post_status = 1
+    </select>
+
+    <select id="getFormById" resultType="com.metaShare.modules.customize.entity.CustomForm">
+        select custom.*,relational.parent_id as parentId from custom_form as custom
+        left join custom_relational as relational on custom.id = relational.children_id
+        where custom.id = #{id}
+    </select>
+
+
+</mapper>

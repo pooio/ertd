@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.metaShare.modules.kb.dao.KbDirectoryDao">
+    <select id="finddirList" parameterType="hashmap" resultType="com.metaShare.modules.kb.entity.KbDirectory">
+        SELECT * from kb_directory
+          WHERE
+        kb_dir_gbcode = #{KbDirGbcode}
+        
+        <if test="kbDirName != null">
+          and kb_dir_name like CONCAT('%', #{kbDirName}, '%')
+        </if>
+    </select>
+    <select id="getKbdirOne" parameterType="hashmap" resultType="com.metaShare.modules.kb.entity.KbDirectory">
+        SELECT * from kb_directory
+        WHERE kb_dir_clevel=1
+    </select>
+    <select id="getKbdirTwo" parameterType="hashmap" resultType="com.metaShare.modules.kb.entity.KbDirectory">
+        SELECT * from kb_directory
+        WHERE  kb_dir_gbcode =  #{KbDirGbcode}
+    </select>
+
+
+   <select id="getMaxDirCodeByParentCode"  parameterType="hashmap" resultType="String">
+        SELECT MAX(kb_dir_code) as kb_dir_code FROM kb_directory WHERE  kb_dir_gbcode =  #{KbDirGbcode}
+    </select>
+    <select id="getDirectoryByCodeAndFlag"  parameterType="hashmap" resultType="com.metaShare.modules.kb.entity.KbDirectory">
+        SELECT *
+        FROM kb_directory kb WHERE kb.kb_dir_code = #{kbDirCode} LIMIT 1
+    </select>
+</mapper>

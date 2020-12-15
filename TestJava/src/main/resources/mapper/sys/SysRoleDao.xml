@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.metaShare.modules.sys.dao.SysRoleDao">
+
+    <select id="findByUser" resultType="com.metaShare.modules.sys.entity.SysRole">
+        select sr.* from sys_role as sr left join sys_role_user as sru on sr.id = sru.role_id where sru.user_id = #{userId} and sr.deleted = 0 and sr.in_use=1
+    </select>
+
+    <select id="selectListByTypeId" resultType="com.metaShare.modules.sys.entity.SysRole">
+        select sr.* from sys_role as sr where sr.deleted = 0
+        <if test="orgName != null">
+           and sr.ROLE_NAME like CONCAT('%', #{orgName}, '%')
+        </if>
+        <if test="orgCode != null">
+            and sr.ROLE_CODE like CONCAT('%',#{orgCode},'%')
+        </if>
+order by CREATE_TIME desc 
+    </select>
+      <select id="allList" resultType="com.metaShare.modules.sys.entity.SysRole">
+        select sr.* from sys_role as sr where sr.deleted = 0 and sr.in_use=1 order by CREATE_TIME desc 
+    </select>
+    
+    <select id="getRoleResource" resultType="com.metaShare.modules.sys.entity.SysRoleResource">
+        select
+          RESOURCE_ID
+        from
+          sys_role_resource as srr
+        left join
+          sys_resource as sr
+        on
+          srr.RESOURCE_ID = sr.ID
+        where
+          srr.deleted = 0
+        and
+          sr.deleted = 0
+          <if test="roleId != null">
+            and srr.ROLE_ID = #{roleId}
+          </if>
+        and
+          (sr.PARENT_ID != 1
+          or
+            (sr.id
+          in
+            (select
+              id
+            from
+              sys_resource
+            where
+              deleted = 0
+            and
+              id
+            not in
+            (
+              SELECT
+                sr1.id
+              FROM
+                sys_resource AS sr1
+              LEFT JOIN
+                sys_resource AS sr2
+              ON
+                sr1.id = sr2.PARENT_ID
+              WHERE
+                sr1.deleted = 0
+              AND
+                sr2.deleted = 0 and sr1.PARENT_ID = 1
+              GROUP BY
+                sr1.id)
+              and
+                PARENT_ID = 1)
+            )
+          )
+    </select>
+       <select id="getRoleOrg" resultType="com.metaShare.modules.sys.entity.SysRoleOrg">
+        select org_id from sys_role_org as sr where 1=1
+        <if test="roleId != null">
+           and ROLE_ID = #{roleId}
+        </if>
+    </select>
+    
+</mapper>

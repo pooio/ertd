@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.metaShare.modules.bpm.dao.BpmUserTaskDao">
+
+	<select id="selectByTaskId" resultType="com.metaShare.modules.bpm.entity.BpmUserTask">
+		select * from bpm_user_task where deleted = 0 and process_id = #{taskId}
+	</select>
+
+	<update id="updateApprovalStatusSelf">
+		update bpm_user_task set approval_status = #{approvalStatus},process_id = #{processId} where id = #{id}
+	</update>
+
+	<update id="updateApprovalStatusOnTable">
+		update ${tableName} set approval_status = #{approvalStatus} where
+		<if test="type == 0">
+			id = #{businessKey}
+		</if>
+		<if test="type == 1">
+			/*知识库主键为kp_pk*/
+			kb_pk = #{businessKey}
+		</if>
+	</update>
+	<update id="updateApprovalStatusAndTime">
+		update bpm_user_task set approval_status = #{approvalStatus},end_time = #{endTime} where id = #{id}
+	</update>
+
+	<select id="getTaskInfoOnProcessId" resultType="hashmap">
+		select but.business_name as businessName,but.business_key as businessKey,su.`NAME` as applyUserName,but.definition_key as definitionKey,but.definition_name as definitionName,process_id as processId,su.login_name as loginName,but.process_name as processName
+		from bpm_user_task as but left join sys_user as su on but.create_user_id = su.ID where but.process_id = #{processId}
+	</select>
+
+	<select id="getHistoryProcessInstanceTotal" resultType="java.lang.Integer">
+		select count(ahp.ID_) from act_hi_procinst as ahp
+		left join act_hi_varinst as ahv on ahp.ID_ = ahv.PROC_INST_ID_
+		LEFT JOIN act_hi_varinst AS ahv1 ON ahp.ID_ = ahv1.PROC_INST_ID_
+		  where ahv.NAME_= 'title'  and ahv1.NAME_ = 'sponsorName'
+		<if test="processName != null">
+			and ahv.TEXT_ like CONCAT('%',#{processName},'%')
+		</if>
+		<if test="loginName != null">
+			and ahv1.TEXT_ like CONCAT('%',#{loginName},'%')
+		</if>
+		<if test="type == null">
+			and ahp.END_TIME_ is null
+		</if>
+		<if test="type == 0">
+			and ahp.END_TIME_ is null
+		</if>
+		<if test="type == 1">
+			and ahp.END_TIME_ is not null
+		</if>
+	</select>
+
+	<select id="getByBusinessKeyAndProcessKey" resultType="com.metaShare.modules.bpm.entity.BpmUserTask">
+		select * from bpm_user_task where deleted = 0 and business_key = #{businessKey} and definition_key = #{processDefinitionKey}
+	</select>
+
+	<select id="getToTasksTotal" resultType="java.lang.Integer">
+		SELECT
+			count(art.ID_)
+		FROM
+			act_ru_task AS art
+		LEFT JOIN act_ru_variable AS arv ON art.PROC_INST_ID_ = arv.PROC_INST_ID_
+		LEFT JOIN bpm_user_task AS but on art.PROC_INST_ID_ = but.process_id
+		LEFT JOIN sys_user as user on but.create_user_id = user.id
+		WHERE
+			arv.NAME_ = 'title'
+		<if test="approvalType != null">
+			and but.approval_status = #{approvalType}
+		</if>
+		<if test="loginName != null">
+			and art.ASSIGNEE_ = #{loginName}
+		</if>
+		<if test="processDefinitionName != null">
+			and arv.TEXT_ like CONCAT('%',#{processDefinitionName},'%')
+		</if>
+		<if test="applyUserName != null">
+			and user.name like CONCAT('%',#{applyUserName},'%')
+		</if>
+		<if test="startDate != null">
+			and but.create_time &gt;= #{startDate}
+		</if>
+		<if test="endDate != null">
+			and but.create_time &lt; #{endDate}
+		</if>
+	</select>
+
+
+	<select id="getHistorickTotal" resultType="java.lang.Integer">
+		select count(task.ID_) from act_hi_taskinst as task left join bpm_user_task as but on task.PROC_INST_ID_ = but.process_id
+		LEFT JOIN act_ru_variable AS arv ON task.PROC_INST_ID_ = arv.PROC_INST_ID_  and arv.NAME_ = 'title'
+		where  but.approval_status != 0
+		<if test="loginName != null">
+			and task.ASSIGNEE_ = #{loginName}
+		</if>
+		<if test="startDate != null">
+			and task.start_time_ &gt;= #{startDate}
+		</if>
+		<if test="endDate != null">
+			and task.start_time_ &lt; #{endDate}
+		</if>
+		<if test="approvalType != null">
+			and but.approval_status = #{approvalType}
+		</if>
+		<if test="processDefinitionName != null">
+			and arv.TEXT_ like CONCAT('%',#{processDefinitionName},'%')
+		</if>
+	</select>
+
+</mapper>

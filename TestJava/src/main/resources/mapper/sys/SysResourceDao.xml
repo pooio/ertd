@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.metaShare.modules.sys.dao.SysResourceDao">
+
+    <select id="selectTopResource" resultType="com.metaShare.modules.sys.entity.SysResource">
+        select * from sys_resource where  deleted = 0 and id = 1 and  type = 0 LIMIT 1
+    </select>
+
+    <select id="selectChildrenResources" resultType="com.metaShare.modules.sys.entity.SysResource">
+        SELECT distinct R.ID,R.NAME,R.URL,R.IS_SHOW,R.PARENT_ID,
+        R.SORT,R.REMARK,R.DELETED,R.ICON_CLASS,R.type,R.btn_type
+        FROM
+        SYS_RESOURCE R where R.DELETED = 0
+        <if test="id != null">
+            AND R.PARENT_ID = #{id}
+        </if>
+
+        <if test="roleIds != null">
+            and R.ID in
+            (select RESOURCE_ID from sys_role_resource where DELETED = 0
+            AND ROLE_ID in
+            <foreach collection="roleIds" item="roleId" open="(" close=")" separator=",">
+                #{roleId}
+            </foreach>
+            )
+        </if>
+         <if test="type != 0">
+             and R.type != 1 and R.IS_SHOW = 1
+         </if>
+
+         <if test="name != null">
+        	and name like CONCAT('%', #{name}, '%')
+        </if>
+        ORDER BY R.SORT,R.CREATE_TIME
+    </select>
+
+    <select id="selectRolesBtn" resultType="com.metaShare.modules.sys.entity.SysResource">
+        select * from sys_resource as sr
+         where sr.deleted = 0 and sr.is_show = 1 and sr.type = 1
+        <if test="array != null">
+            and sr.ID in
+            (select RESOURCE_ID from sys_role_resource where DELETED = 0
+            AND ROLE_ID in
+            <foreach collection="array" item="roleId" open="(" close=")" separator=",">
+                #{roleId}
+            </foreach>
+            )
+        </if>
+    </select>
+
+    <select id="selectBtnByName" resultType="com.metaShare.modules.sys.entity.SysResource">
+        select * from sys_resource where deleted = 0 and btn_type = #{btnName}
+    </select>
+
+    <select id="getRolesBtn" resultType="com.metaShare.modules.sys.entity.SysResource">
+        select * from sys_resource as sr
+        where sr.deleted = 0 and sr.type = 1
+            and sr.ID in
+            (select RESOURCE_ID from sys_role_resource where DELETED = 0
+            AND ROLE_ID = #{id}
+            )
+    </select>
+
+    <select id="selectAllBtnId" resultType="java.lang.String">
+        select id from sys_resource where deleted = 0 and type = 1 and is_show = 1
+    </select>
+
+    <select id="getResourceListByRoleId" resultType="java.lang.String">
+        select sr.id from sys_resource as sr
+        where sr.deleted = 0 and sr.type != 1
+            and sr.ID in
+            (select RESOURCE_ID from sys_role_resource where DELETED = 0
+            AND ROLE_ID = #{roleId}
+            )
+    </select>
+
+    <select id="selectChildrenResourcesAuthorized" resultType="com.metaShare.modules.sys.entity.SysResource">
+        SELECT distinct R.ID,R.NAME,R.URL,R.IS_SHOW,R.PARENT_ID,
+        R.SORT,R.REMARK,R.DELETED,R.ICON_CLASS,R.type,R.btn_type
+        FROM
+        SYS_RESOURCE R where R.DELETED = 0  AND R.PARENT_ID = #{id}
+        and (R.ID in
+        (select RESOURCE_ID from sys_role_resource where DELETED = 0
+        AND RESOURCE_ID in
+        <foreach collection="array" item="roleId" open="(" close=")" separator=",">
+            #{roleId}
+        </foreach>
+        ) or R.type = 1
+        )
+        ORDER BY R.SORT
+    </select>
+
+    <select id="getAllResourceId" resultType="java.lang.String">
+        select id from sys_resource where deleted = 0 and type = 0 and is_show = 1
+    </select>
+
+    <select id="checkMenuName" resultType="com.metaShare.modules.sys.entity.SysResource">
+        select * from sys_resource where deleted = 0
+        <if test='type == "0"'>
+            and name = #{menuName}
+            <if test="menuParentId != null">
+                and parent_id = #{menuParentId}
+            </if>
+        </if>
+        <if test='type == "1"'>
+            and btn_type = #{menuName}
+        </if>
+    </select>
+
+    <select id="checkURL" resultType="com.metaShare.modules.sys.entity.SysResource">
+        select * from sys_resource where deleted = 0 and url = #{menuName} and parent_id = #{menuParentId}
+    </select>
+
+    <select id="findChildren" resultType="com.metaShare.modules.sys.entity.SysResource">
+        select * from sys_resource where deleted = 0 and parent_id = #{id} and type = 0
+    </select>
+
+</mapper>

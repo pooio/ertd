@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.metaShare.modules.sys.dao.SysRoleDataFilterDao">
+
+
+	<delete id="deleteByRoleId">
+		delete from sys_role_data_filter where role_id = #{id}
+	</delete>
+</mapper>
+
+

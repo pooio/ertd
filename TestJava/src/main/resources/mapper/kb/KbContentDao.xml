@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.metaShare.modules.kb.dao.KbContentDao">
+    <select id="getList" parameterType="com.metaShare.modules.kb.entity.KbContent" resultType="com.metaShare.modules.kb.entity.KbContent">
+        SELECT sys_dicinfo.id as kb_type_pk , kb_pk,kb_code,kb_dir_pk,kb_dir_code,kb_dir_name,kb_name,key_word,kb_content,kb_link_code,kb_type_pk,kb_type_name,kb_count,kb_view_count,create_id,kb_content.create_name,kb_content.create_time,kb_content.update_name,approval_status
+        from kb_content
+        LEFT JOIN sys_dicinfo ON kb_content.kb_type_pk =sys_dicinfo.id and sys_dicinfo.in_use=1 and sys_dicinfo.deleted=0 where 1=1
+          <if test='kbDirPk != "1"'>
+              and kb_dir_pk = #{kbDirPk}
+          </if>
+          <if test="kbName != null">
+        	and  kb_name like CONCAT('%',#{kbName},'%')
+        </if>
+        order by kb_content.create_time desc
+    </select>
+    <select id="getKbContentCountNum" resultType="int">
+       SELECT COUNT(kb_pk) FROM kb_content
+    </select>
+    <select id="getContentListByKeyWord" parameterType="hashmap" resultType="com.metaShare.modules.kb.entity.KbContent">
+        SELECT * FROM kb_content  where 1=1
+        <if test='kbDirPk != "1"'>
+            and kb_dir_pk = #{kbDirPk}
+        </if>
+        <if test="keyWord != null">
+            <if test="type==1">
+                and kb_name like CONCAT('%', #{keyWord}, '%')
+            </if>
+            <if test="type==3">
+                and (kb_name like CONCAT('%', #{keyWord}, '%')
+                or  key_word  like CONCAT('%', #{keyWord}, '%')
+                or  kb_content  like CONCAT('%', #{keyWord}, '%'))
+            </if>
+            <if test="type==2">
+                and key_word like CONCAT('%', #{keyWord}, '%')
+            </if>
+        </if>
+
+       ORDER BY create_time desc,kb_view_count DESC,kb_count DESC
+    </select>
+   <select id="updateQueryNumber" parameterType="hashmap" resultType="string">
+        UPDATE kb_content SET kb_count = kb_count+1 WHERE kb_pk=#{kbPk}
+    </select>
+
+    <!--<sql id="getKbContentListSelect">-->
+        <!--SELECT *-->
+    <!--</sql>-->
+    <!--<sql id="getKbContentListExcept">-->
+        <!--FROM t_kb_content WHERE kb_dir_pk = ? and kb_dir_code = ?-->
+    <!--</sql>-->
+    <!--&lt;!&ndash; 根据父节点和名称获取知识库内容 &ndash;&gt;-->
+    <!--<sql id="geKbContentByParentCodeAndName">-->
+        <!--SELECT * FROM t_kb_content WHERE kb_dir_code =? AND kb_name = ?-->
+    <!--</sql>-->
+    <!--&lt;!&ndash; 获取知识库内容条目数 &ndash;&gt;-->
+    <!--<sql id="getKbContentCountNum">-->
+        <!--SELECT COUNT(kb_pk) FROM t_kb_content-->
+    <!--</sql>-->
+    <!--&lt;!&ndash; 获取知识库完整目录结构，包含知识点信息 &ndash;&gt;-->
+    <!--<sql id="getAllKbTreeData">-->
+        <!--SELECT kb_dir_code AS id,kb_dir_gbcode AS pId, kb_dir_name AS name,'' AS kb_code FROM t_kb_directory-->
+        <!--UNION-->
+        <!--SELECT kb_pk AS id,kb_dir_code AS pId,kb_name AS name,kb_code FROM t_kb_content-->
+    <!--</sql>-->
+    <!--<sql id="getKbContentById">-->
+        <!--SELECT c.kb_pk,c.kb_code,c.kb_dir_code,c.kb_dir_name,c.kb_name,c.key_word,c.kb_content,c.kb_link_code,c.kb_type_pk,c.kb_type_name,c.audit_name,c.auditman_demo,-->
+        <!--FROM_UNIXTIME(c.auditman_time) auditman_time,c.url,c.kb_demo,c.kb_count,c.kb_view_count,c.create_id,c.create_name,FROM_UNIXTIME(c.create_time) create_time,c.update_name,c.update_user_id,FROM_UNIXTIME(c.update_time) update_time-->
+        <!--,d.kb_dir_flag FROM t_kb_content c LEFT JOIN t_kb_directory d ON c.kb_dir_code = d.kb_dir_code WHERE c.kb_pk = ?-->
+    <!--</sql>-->
+    <!--&lt;!&ndash; 根据关键字检索知识库内容 &ndash;&gt;-->
+    <!--<sql id="getContentListByKeyWord">-->
+        <!--SELECT * FROM t_kb_content WHERE 1=1-->
+    <!--</sql>-->
+    <!--<sql id="updateQueryNumber">-->
+        <!--UPDATE t_kb_content SET kb_count = kb_count+1 WHERE 1=1-->
+    <!--</sql>-->
+    <!--<sql id="getHotSearchKeyWord">-->
+        <!--select * from `t_kb_search_record` group by key_word order by count(key_word) desc limit 0,5-->
+    <!--</sql>-->
+</mapper>

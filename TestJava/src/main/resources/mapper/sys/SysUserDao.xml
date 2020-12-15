@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.metaShare.modules.sys.dao.SysUserDao">
+
+    <select id="listUser" resultType="hashmap">
+        SELECT
+          *
+        FROM
+          (SELECT
+            u.*,
+            o.org_name,
+            c1.level AS out_level,
+            c1.grade AS out_grade,
+            c10.level AS in_level,
+            c10.grade AS in_grade
+          FROM
+            sys_user u
+            LEFT JOIN sys_user_config c
+              ON c.user_id = u.id
+            LEFT JOIN sys_org o
+              ON o.id = u.org_id
+            LEFT JOIN criteria c1
+              ON c1.id = c.out_allowance_id
+            LEFT JOIN criteria c10
+              ON c10.id = c.in_allowance_id) t
+        <where>
+            ${ew.sqlSegment}
+        </where>
+        ORDER BY update_date desc
+    </select>
+    <select id="getUserInfo" parameterType="int" resultType="hashmap">
+        SELECT
+          u.*,
+          c.*,
+          o.org_name,
+          c1.level AS out_level,
+          c1.grade AS out_grade,
+          c1.amt AS out_amt,
+          c2.level AS tech_level,
+          c2.amt AS tech_amt,
+          c3.amt AS local_working_allowance,
+          c4.amt AS deepsea_allowance,
+          c5.amt AS agent_allowance,
+          c6.level AS skill_level,
+          c6.amt AS skill_amt,
+          c7.amt AS team_allowance,
+          c10.level AS in_level,
+          c10.grade AS in_grade,
+          c10.amt AS in_amt,
+          c11.level AS benefit_level,
+          c11.amt AS benefit_amt
+        FROM
+          sys_user u
+          LEFT JOIN sys_user_config c
+            ON c.user_id = u.id
+          LEFT JOIN sys_org o
+            ON o.id = u.org_id
+          LEFT JOIN criteria c1
+            ON c1.id = c.out_allowance_id
+          LEFT JOIN criteria c2
+            ON c2.id = c.tech_allowance_id
+          LEFT JOIN criteria c3
+            ON c3.id = c.local_working_allowance_id
+          LEFT JOIN criteria c4
+            ON c4.id = c.deepsea_allowance_id
+          LEFT JOIN criteria c5
+            ON c5.id = c.agent_allowance_id
+          LEFT JOIN criteria c6
+            ON c6.id = c.skill_allowance_id
+          LEFT JOIN criteria c7
+            ON c7.id = c.team_allowance_id
+          LEFT JOIN criteria c10
+            ON c10.id = c.in_allowance_id
+          LEFT JOIN criteria c11
+            ON c11.id = c.benefit_id
+        WHERE u.id = #{value}
+    </select>
+    
+     <select id="getListUsers" parameterType ="com.metaShare.modules.sys.dao.SysUserDao" resultType="com.metaShare.modules.sys.entity.SysUser">
+		SELECT
+		  b.*,
+		  c.org_name
+		FROM
+		   sys_user b 
+		  LEFT JOIN sys_user_role a
+		    ON a.user_id = b.id
+		  LEFT JOIN sys_org c
+		    ON b.org_id = c.id
+		WHERE a.role_id = #{id}
+	 	<if test="name !=null">
+	    	and b.name like CONCAT('%', #{name}, '%')
+	    </if>
+	    <if test="mainCode !=null">
+	    	b.main_code like CONCAT('%', #{mainCode}, '%')
+	    </if>
+	    <if test="orgName !=null">
+	    	and c.org_name like CONCAT('%', #{orgName}, '%')
+	    </if>
+	</select>
+	
+      <select id="findByRoleCodesOrLoginNames" parameterType ="com.metaShare.modules.sys.dao.SysUserDao" resultType="com.metaShare.modules.sys.entity.SysUser">
+		SELECT
+		  b.*,
+		  c.org_name
+		FROM
+		   sys_user b 
+		  LEFT JOIN sys_user_role a
+		    ON a.user_id = b.id
+		  LEFT JOIN sys_org c
+		    ON b.org_id = c.id
+		WHERE a.role_id = #{id}
+	 	<if test="name !=null">
+	    	and b.name like CONCAT('%', #{name}, '%')
+	    </if>
+	    <if test="mainCode !=null">
+	    	b.main_code like CONCAT('%', #{mainCode}, '%')
+	    </if>
+	    <if test="orgName !=null">
+	    	and c.org_name like CONCAT('%', #{orgName}, '%')
+	    </if>
+	</select>
+	
+      <select id="findByRoleCodesOrLoginNames" parameterType ="hashmap" resultType="com.metaShare.modules.sys.entity.SysUser">
+		SELECT
+		       b.* 
+		FROM
+		       sys_user b
+		where  b.deleted = false
+		and    b.login_name in (longinNames)
+		or     b.id 
+		in    ( 
+				SELECT 
+							distinct u.id from sys_role_user ru 
+				left join   sys_user u
+				on          ru.user_id = u.id
+				left join   sys_role r
+				on          ru.role_id = r.id
+				where r.role_code in (roleCodes)
+			  )
+	</select>
+	
+      <select id="findByLoginNames" parameterType ="java.lang.String" resultType="com.metaShare.modules.sys.entity.SysUser">
+		SELECT
+		       b.* 
+		FROM
+		       sys_user b
+		where  b.deleted = false
+		and    b.login_name in (longinNames)
+	</select>
+	
+    <select id="findByRoleCodes" resultType="com.metaShare.modules.sys.entity.SysUser">
+		SELECT
+		       b.* 
+		FROM
+		       sys_user b
+		where  b.deleted = false
+		and     b.id 
+		in    ( 
+				SELECT 
+							distinct u.id from sys_role_user ru 
+				left join   sys_user u
+				on          ru.user_id = u.id
+				left join   sys_role r
+				on          ru.role_id = r.id
+				where r.role_code in 
+				<foreach collection="list" item="item" index="index" open="(" close=")" separator=",">
+	      			#{item}
+	    		</foreach>
+			  )
+	</select>
+	
+       <select id="findByRoleCodesAndLoginNames" parameterType ="java.lang.String" resultType="com.metaShare.modules.sys.entity.SysUser">
+		SELECT
+		       b.* 
+		FROM
+		       sys_user b
+		where  b.deleted = false
+		and    ( b.id = #{userId}
+				 and (
+				 	b.id in ( select distinct u.id  from role_user ru left join sys_user u on ru.user_id = u.id
+				 		left join sys_role sr on ru.role_id = sr.id
+				 		where sr.role_code in (#{roleCode})
+				 	)
+				 )
+				)
+		
+	</select>
+	<select id="getLastUpdateTime"  resultType="java.util.Date">
+		select max(x.update_time) from sys_user x where x.deleted=false and x.sys_comm_state is not null
+	</select>
+
+
+	<select id="findByNameOrLoginName" parameterType ="hashmap" resultType="com.metaShare.modules.sys.entity.SysUser">
+		select * from sys_user x where x.login_name = #{loginName} or x.name = #{name} and x.deleted=false
+	</select> 
+	<select id="listByRoleId" parameterType="hashmap" resultType="com.metaShare.modules.sys.entity.SysUser">
+	    select * from sys_user su
+	    where deleted = 0
+	    <if test="name != null">
+	        and su.name like CONCAT('%', #{name}, '%')
+	    </if>
+	     <if test="loginName != null">
+	        and su.login_name like CONCAT('%', #{loginName}, '%')
+	    </if>
+	     <if test="orgId != null">
+	        and su.org_id = #{orgid}
+	    </if>
+	    and su.id in (
+	    	select sru.user_id from sys_role_user sru 
+	    	where sru.deleted = 0
+	    	and sru.role_id = #{hasRole}
+	    )
+	</select>
+
+
+	<select id="getUserNameByLoginName" resultType="java.lang.String">
+		select name from sys_user where login_name = #{loginName} and deleted = 0
+	</select>
+	<select id="selectUserCount" resultType="hashmap">
+		select * from sys_user where org_code like CONCAT(#{orgCode}, '%') and deleted = 0
+	</select>
+	<select id="listAll" parameterType="hashmap" resultType="hashmap">
+		select name  as orgName,id from sys_user where deleted = 0
+	</select>
+
+	<select id="selectByLoginName" resultType="com.metaShare.modules.sys.entity.SysUser">
+		select * from sys_user where deleted = 0 and login_name = #{account}
+	</select>
+
+    <select id="getUserListByRole" resultType="com.metaShare.modules.sys.entity.SysUser">
+        select su.* from sys_user as su left join sys_role_user as sru on su.id = sru.USER_ID where su.deleted = 0 and sru.ROLE_ID = #{roleId}
+        <if test='orgId != null and orgId != "1"'>
+			and su.org_id = #{orgId}
+		</if>
+		<if test="name != null and name != ''">
+			and su.name like CONCAT('%',#{name},'%')
+		</if>
+    </select>
+
+	<select id="selectListNoImgInfo" resultType="com.metaShare.modules.sys.entity.SysUser">
+		select id,name,sex,login_name,password,salt,email,org_id,org_name,status,phone_number,create_user,create_time,update_user,update_time,deleted,user_no,post_id,post_name,qq_acount,age,company,head_img from sys_user where deleted = 0
+		<if test="name != null and name != ''">
+			and name like CONCAT('%',#{name},'%')
+		</if>
+		<if test="loginName != null">
+			and login_name like CONCAT('%',#{loginName},'%')
+		</if>
+		<if test="orgId != null and orgId != ''">
+			and org_id = #{orgId}
+		</if>
+		order by create_time desc
+	</select>
+
+	<select id="getNoUserListByRoleOnOrg" resultType="com.metaShare.modules.sys.entity.SysUser">
+		select * from sys_user where
+		deleted = 0
+		<if test='orgId != null and orgId != "1"'>
+			and org_id = #{orgId}
+		</if>
+		and id not in (select su.id from sys_user as su left join sys_role_user as sru on su.id = sru.USER_ID where su.deleted = 0 and sru.ROLE_ID = #{roleId}
+		<if test='orgId != null and orgId != "1"'>
+			and su.org_id = #{orgId}
+		</if>)
+		<if test="name != null and name != ''">
+			and name like CONCAT('%',#{name},'%')
+		</if>
+	</select>
+
+	<update id="updateByIdOnSelf">
+		update sys_user set phone_number = #{phoneNumber},qq_acount = #{qqAcount},age = #{age},company = #{company},head_img = #{headImg},email = #{email},sex = #{sex} where id = #{id}
+	</update>
+</mapper>
+
+

@@ -1,0 +1,88 @@
+/* 详情title hover样式 */
+.bulletinTitle:hover {
+    color: #409efe;
+    font-weight: 800;
+}
+/* 详情页样式 */
+.biaoti {
+    text-align: center;
+    font-weight: 700;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 18px;
+}
+.gonggao {
+    font-size: 14px;
+    padding-left: 5px;
+    border-left: 3px solid #408eff;
+}
+.info {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 40px;
+    margin-bottom: 20px;
+    color: #999;
+}
+.userContent .el-row{
+    /* height: 50px; */
+    /* line-height: 50px; */
+}
+/* 详情btn*/
+.bulletinTitle {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    transition: none !important;
+    line-height: normal !important;
+}
+.bulletinTitle:hover {
+    color: #409efe;
+    font-weight: 700;
+}
+.cursorPoint{
+    cursor: pointer;
+}
+/* 用户管理-用户详情 */
+.userConter .roleStyle{
+    color: #409EFF;
+}
+.userConter .rowDiv{
+    margin-bottom: 0!important;
+}
+.userConter .rowDiv div{
+    line-height: 60px;
+    border-bottom: 1px solid #f6f6f6;
+}
+.userConter .tagStyle{
+    margin-right: 10px;
+    border: none;
+    background: #fff;
+    font-size: 14px;
+}
+/* 登录页面背景 */
+.login-wrap {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    /* background-image: url('../../assets/img/login_bg.png'); */
+    /* background-image: url(https://api.isoyu.com/bing_images.php); */
+    background-size: 100%;
+}
+/* 找回密码 */
+.ms-forgotPwd {
+    position: absolute;
+    left: 40%;
+    top: 40%;
+    width: 800px;
+    margin: -190px 0 0 -175px;
+    border-radius: 5px;
+    background: #fff;
+    overflow: hidden;
+    padding: 20px;
+}
+.handleToLogin{
+    color: #606266;
+    cursor: pointer;
+}

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.metaShare.modules.bpm.dao.BpmStatusDao">
+
+	<select id="findByProcessInstinceId" parameterType="java.lang.String"   resultType="com.metaShare.modules.bpm.entity.BpmStatus">
+		select * from BPM_STATUS where process_instince_id =#{processInstinceId}
+	</select>
+
+	<select id="findByBusinessKey" parameterType="java.lang.String"   resultType="com.metaShare.modules.bpm.entity.BpmStatus">
+		select * from BPM_STATUS where business_key = #{businessKey}
+	</select>
+	
+	<select id="findByBusinessKeyIn" parameterType="java.lang.String"   resultType="com.metaShare.modules.bpm.entity.BpmStatus">
+		select * from BPM_STATUS where business_key in
+		<foreach collection="array" item="item" index="index" open="(" close=")" separator=",">
+			#{item}
+		</foreach>
+	</select>
+	
+	<delete id="deleteByBusinessKeyAndDefineKey">
+	    delete from BPM_STATUS where business_key = #{businessKey} and process_definition_key = #{processDefinitionKey}
+	</delete>
+	
+	<update id="updateActiveFalseBybusinessKey">
+	    update BPM_STATUS x set x.isActive=false where x.business_key = #{businessKey}
+	</update>
+	
+	<delete id="deleteByProcessInstanceId">
+	    delete from BPM_STATUS where process_instince_id = #{processInstanceId}
+	</delete>
+	
+	<select id="findactruexecution" parameterType="java.lang.String"   resultType="java.lang.String">
+		SELECT are.PROC_INST_ID_ FROM act_ru_execution are 
+		 WHERE are.BUSINESS_KEY_ = #{businessKey}
+	</select>
+	
+	<delete id="deleteactruidentitylink">
+	    delete from act_ru_identitylink where PROC_INST_ID_ = #{procinstId}
+	</delete>
+	
+	<delete id="deleteactrutask">
+	    delete from act_ru_task where PROC_INST_ID_ = #{procinstId}
+	</delete>
+	
+	<delete id="deleteactruvariable">
+	    delete from act_ru_variable where PROC_INST_ID_ = #{procinstId}
+	</delete>
+	
+	<delete id="deleteactruexecution">
+	    delete from act_ru_execution where BUSINESS_KEY_ = #{procinstId}
+	</delete>
+</mapper>

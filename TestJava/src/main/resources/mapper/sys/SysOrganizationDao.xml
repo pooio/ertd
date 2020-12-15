@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.metaShare.modules.sys.dao.SysOrganizationDao">
+
+    <select id="selectTopResource" resultType="com.metaShare.modules.sys.entity.SysOrganization">
+        select * from sys_organization where in_use = 1 and deleted = 0 and PARENT_ID='0' LIMIT 1
+    </select>
+
+    <select id="selectApplist" resultType="com.metaShare.modules.sys.entity.SysOrganization">
+        select * from sys_organization where in_use = 1 and deleted = 0 and PARENT_ID='0' LIMIT 1
+    </select>
+
+
+    <select id="selectChildrenResources" resultType="com.metaShare.modules.sys.entity.SysOrganization">
+        SELECT distinct O.ID,O.ORG_NAME,O.PARENT_ID,O.in_use
+        FROM
+        SYS_ORGANIZATION O
+        where O.DELETED = 0 AND O.PARENT_ID = #{id}
+        <if test="dataType != null">
+            and O.in_use=1
+        </if>
+        ORDER BY O.SORT,O.create_time asc
+    </select>
+
+
+
+    <update id="updateRemark">
+        update sys_organization set remark = #{remark} where id = #{id}
+    </update>
+
+    <select id="selectByParentId" resultType="com.metaShare.modules.sys.entity.SysOrganization">
+        select * from sys_organization where deleted = 0 and parent_id = #{parentId} order by org_code desc limit 1
+    </select>
+
+    <select id="getChildrenListOnOrgCode" resultType="com.metaShare.modules.sys.entity.SysOrganization">
+        select * from sys_organization where deleted = 0 and org_code like CONCAT(#{orgCode},'%')
+    </select>
+</mapper>

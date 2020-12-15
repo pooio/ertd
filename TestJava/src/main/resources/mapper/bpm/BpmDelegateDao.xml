@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.metaShare.modules.bpm.dao.BpmDelegateDao">
+	<sql id="bpmDelegateColumn">
+	    b.id,b.user_id,b.delegate,b.start_date,b.end_date,
+	    b.process_key,b.delegate_status,b.create_user,b.create_time,b.update_time,
+	    b.update_user,b.deleted,b.remark,b.delegate_type
+	</sql>
+	<select id="findAllWithNoPageNoSort" resultType="com.metaShare.modules.bpm.entity.BpmDelegate">
+	    select 
+	    <include refid="bpmDelegateColumn"></include>
+	    from bpm_delegate b left join sys_user s 
+	    on b.user_id = s.id
+	    where s.login_name = #{loginName}
+	    and b.process_key = #{processKey}
+	    and s.deleted = 0
+	    and b.delegate_status = 1
+	    and b.deleted = 0
+	    and b.start_date &lt;= #{date}
+	    and b.end_date &gt;= #{date}
+	</select>
+	
+	<select id="findAllByLoginNames" resultType="com.metaShare.modules.bpm.entity.BpmDelegate">
+	    select 
+	    <include refid="bpmDelegateColumn"></include>
+	    from bpm_delegate b left join sys_user s 
+	    on b.user_id = s.id
+	    where s.login_name in
+	    <foreach collection="array" item="item" index="index" open="(" close=")" separator=",">
+			#{item}
+		</foreach>
+	    and b.process_key = #{processKey}
+	    and s.deleted = 0
+	    and b.delegate_status = #{processStatus}
+	    and b.deleted = 0
+	    and b.start_date &lt;= #{nowDate}
+	    and b.end_date &gt;= #{nowDate}
+	</select>
+	
+	<select id="findAllDateAndId" resultType="com.metaShare.modules.bpm.entity.BpmDelegate">
+	     select 
+	    <include refid="bpmDelegateColumn"></include>
+	    from bpm_delegate b left join sys_user s 
+	    on b.user_id = s.id
+	    where 
+	    	((b.start_date &lt;= #{checkEndDate} and b.end_date &gt;= #{checkStartDate})
+	    	or
+	    	(b.start_date &lt; #{checkStartDate} and b.end_date &gt;= #{checkStartDate}))
+	    and s.id = #{user}
+	    and b.process_key = #{processKey}
+	    and b.deleted = 0
+	    <if test="id == null">
+	        and b.id &lt;&gt; #{id}
+	    </if>
+	</select>
+	<!--<select id="findApp" resultType="com.metaShare.modules.bpm.dto.AllFormAppDTO">
+	    select business_key,business_app, business_app_name,
+	    business_name , business_statue, business_statue_name,
+	    process_code,process_name, process_instince_id, curr_node,
+	    curr_app_user, curr_app_user_name, form_url,create_time
+	    from view_findmyapp where  process_name is not NULL and
+	    business_app = #{loginName}
+	    <if test="processName != null">
+	        and process_name like "%"#{processName}"%"
+	    </if>
+	    order by create_time desc
+	</select>-->
+
+	<select id="findApp" resultType="com.metaShare.modules.bpm.dto.AllFormAppDTO">
+		select business_key,business_app, business_app_name,
+		business_name , business_statue, business_statue_name,
+		process_code,bpmProcessName as process_name,process_instince_id as process_instance_id,
+		ifnull(curr_node,'流程已结束') as curr_node,
+		curr_app_user,
+		case when curr_app_user is null then '无' when curr_app_user_name is null then 'test03-账号异常' else curr_app_user_name end as curr_app_user_name,
+		form_url,create_time,end_time
+		from
+		(
+		SELECT
+		`bus_info`.`businessKey` AS `business_key`,
+		`bus_info`.`business_app` AS `business_app`,
+		`bus_info`.`business_app_name` AS `business_app_name`,
+		`bus_info`.`business_name` AS `business_name`,
+		`bus_info`.`business_statue` AS `business_statue`,
+		`bus_info`.`business_statue_name` AS `business_statue_name`,
+		`bus_info`.`bussiness_id` AS `bussiness_id`,
+		`bus_info`.`process_code` AS `process_code`,
+		`bus_info`.`process_name` AS `process_name`,
+		`bus_info`.`process_instince_id` AS `process_instince_id`,
+		`bus_info`.`createTime` AS `create_time`,
+		`bus_info`.`bpmProcessName` AS `bpmProcessName`,
+		`bus_info`.`endTime` AS `end_time`,
+		`node_info`.`proc_inst_id` AS `proc_inst_id`,
+		`node_info`.`currNode` AS `curr_node`,
+		`node_info`.`currAppUser` AS `curr_app_user`,
+		`node_info`.`currAppUserName` AS `curr_app_user_name`,
+		`node_info`.`formUrl` AS `form_url`
+		FROM
+		(
+		(
+		(
+		SELECT
+		`business`.`businessKey` AS `businessKey`,
+		`zz`.`LOGIN_NAME` AS `business_app`,
+		`zz`.`NAME` AS `business_app_name`,
+		`business`.`NAME` AS `business_name`,
+		`business`.`statue` AS `business_statue`,
+		`business`.`createTime` AS `createTime`,
+		`business`.`endTime` AS `endTime`,
+		`business`.`bpmProcessName` AS `bpmProcessName`,
+		`sd`.`dic_name` AS `business_statue_name`,
+		`process_info`.`BUSINESS_KEY` AS `bussiness_id`,
+		`process_info`.`KEY_` AS `process_code`,
+		`process_info`.`NAME_` AS `process_name`,
+		`process_info`.`PROCESS_INSTINCE_ID` AS `process_instince_id`
+		FROM
+		(
+		(
+		(
+		(
+		(
+		SELECT
+		h.business_key as businessKey,
+		h.create_user_id as USER_ID,
+		h.business_name as NAME,
+		h.create_time as createTime,
+		h.end_time as endTime,
+		h.process_name as bpmProcessName,
+		(
+		CASE
+		WHEN (`h`.`approval_status` = 0) THEN
+		'watingApproval'
+		WHEN (`h`.`approval_status` = 1) THEN
+		'approvaling'
+		WHEN (`h`.`approval_status` = 2) THEN
+		'approvalFinish'
+		WHEN (`h`.`approval_status` = 3) THEN
+		'approvalNoAgree'
+		END
+		) AS `statue`
+		FROM
+		`sys`.`bpm_user_task` `h`
+		WHERE
+		h.deleted = 0
+	  	<if test="approvalType != null">
+			and h.approval_status = #{approvalType}
+		</if>
+		<if test="startDate != null and endDate != null">
+			and h.create_time &gt;= #{startDate} and h.create_time &lt; #{endDate}
+		</if>
+		<if test="processDefinitionName != null">
+			and h.process_name like CONCAT('%',#{processDefinitionName},'%')
+		</if>
+		)
+		) `business`
+		LEFT JOIN `sys`.`sys_user` `zz` ON (
+		(
+		(
+		`business`.`USER_ID` = `zz`.`ID`
+		)
+		AND (`zz`.`DELETED` = 0)
+		)
+		)
+		)
+		LEFT JOIN `sys`.`sys_dicinfo` `sd` ON (
+		(
+		(
+		CONVERT (
+		`business`.`statue` USING utf8
+		) = `sd`.`dic_code`
+		)
+		AND (`sd`.`deleted` = 0)
+		)
+		)
+		)
+		LEFT JOIN (
+		SELECT
+		`bpm`.`BUSINESS_KEY` AS `BUSINESS_KEY`,
+		`bpm`.`PROCESS_INSTINCE_ID` AS `PROCESS_INSTINCE_ID`,
+		`act`.`KEY_` AS `KEY_`,
+		`act`.`NAME_` AS `NAME_`
+		FROM
+		(
+		`sys`.`bpm_status` `bpm`
+		LEFT JOIN (
+		SELECT
+		`p`.`NAME_` AS `NAME_`,
+		`p`.`KEY_` AS `KEY_`
+		FROM
+		(
+		(
+		(
+		SELECT
+		`sys`.`act_re_procdef`.`KEY_` AS `KEY_`,
+		max(
+		`sys`.`act_re_procdef`.`VERSION_`
+		) AS `maxVresion`
+		FROM
+		`sys`.`act_re_procdef`
+		GROUP BY
+		`sys`.`act_re_procdef`.`KEY_`
+		)
+		) `m`
+		LEFT JOIN `sys`.`act_re_procdef` `p` ON (
+		(
+		(`p`.`KEY_` = `m`.`KEY_`)
+		AND (
+		`p`.`VERSION_` = `m`.`maxVresion`
+		)
+		)
+		)
+		)
+		) `act` ON (
+		(
+		`bpm`.`PROCESS_DEFINITION_KEY` = `act`.`KEY_`
+		)
+		)
+		)
+		) `process_info` ON (
+		(
+		`business`.`businessKey` = `process_info`.`BUSINESS_KEY`
+		)
+		)
+		)
+		)
+		) `bus_info`
+		LEFT JOIN (
+		SELECT
+		`t`.`PROC_INST_ID_` AS `proc_inst_id`,
+		`t`.`NAME_` AS `currNode`,
+		`t`.`ASSIGNEE_` AS `currAppUser`,
+		`s`.`NAME` AS `currAppUserName`,
+		`t`.`FORM_KEY_` AS `formUrl`
+		FROM
+		(
+		`sys`.`act_ru_task` `t`
+		LEFT JOIN `sys`.`sys_user` `s` ON (
+		(
+		(
+		`t`.`ASSIGNEE_` = `s`.`LOGIN_NAME`
+		)
+		AND (`s`.`DELETED` = 0)
+		)
+		)
+		)
+		) `node_info` ON (
+		(
+		`bus_info`.`process_instince_id` = `node_info`.`proc_inst_id`
+		)
+		)
+		)
+		) as a
+		where  process_name is not NULL and
+		business_app = #{loginName}
+		<if test="processName != null">
+			and process_name like "%"#{processName}"%"
+		</if>
+		order by create_time desc
+	</select>
+</mapper>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.metaShare.modules.sys.dao.SysRoleTypeDao">
+
+    <select id="selectTopResource" resultType="com.metaShare.modules.sys.entity.SysRoleType">
+        select * from sys_role_type where deleted = 0 and parent_id = 0
+    </select>
+
+    <select id="selectChildrenResources" resultType="com.metaShare.modules.sys.entity.SysRoleType">
+        SELECT distinct SRT.ID,SRT.TYPE_NAME,SRT.PARENT_ID,SRT.REMARK
+        FROM
+        SYS_ROLE_TYPE AS SRT
+        where SRT.DELETED = 0 AND SRT.PARENT_ID = #{id}
+        ORDER BY SRT.SORT
+    </select>
+</mapper>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.metaShare.modules.customize.dao.CustomDataDao">
+
+    <select id="getDataJson" resultType="com.metaShare.modules.customize.entity.CustomData">
+        select * from custom_data where  custom_data_id = #{businessKey}
+    </select>
+
+    <select id="getDataJsonById" resultType="com.metaShare.modules.customize.entity.CustomData">
+        select * from custom_data where deleted = 0 and id = #{id}
+    </select>
+
+</mapper>
